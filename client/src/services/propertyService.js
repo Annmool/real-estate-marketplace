@@ -1,75 +1,83 @@
 // client/src/services/propertyService.js
-import axios from 'axios'; // Use import for frontend
+import axios from 'axios';
 
-// Base URL relies on the proxy configured in vite.config.js
 const API_BASE_URL = '/api/properties';
 
-// Function 1: Get All Properties
-export const getAllProperties = async () => {
+// <<< --- ADD THIS HELPER FUNCTION --- >>>
+// Function to get the Authorization header object
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token'); // Get token from storage
+    if (token) {
+        // If token exists, return the header object
+        return { Authorization: `Bearer ${token}` };
+    }
+    // If no token, return an empty object (no auth header)
+    return {};
+};
+// <<< --- END HELPER FUNCTION --- >>>
+
+
+// --- Existing Functions ---
+export const getAllProperties = async (filters = {}) => {
     try {
-        // Use axios to make the GET request
-        const response = await axios.get(API_BASE_URL);
-        // Return the data array from the response
-        return response.data;
+        // --- Build Query String ---
+        const params = new URLSearchParams();
+        // Append filters to query parameters if they have a value
+        if (filters.city) params.append('city', filters.city);
+        if (filters.propertyType) params.append('propertyType', filters.propertyType);
+        if (filters.status) params.append('status', filters.status);
+        // Add other filters like minPrice, maxPrice here if needed
+        // if (filters.minPrice) params.append('minPrice', filters.minPrice);
+
+        const queryString = params.toString();
+        const requestUrl = `${API_BASE_URL}${queryString ? `?${queryString}` : ''}`; // Append ? only if query exists
+        console.log("Service making request to:", requestUrl); // Log the final URL
+        // --- END Build Query String ---
+
+        // Make the GET request with the potentially filtered URL
+        const response = await axios.get(requestUrl);
+        return response.data; // Return the array
     } catch (error) {
-        // Log error and create a user-friendly message
         console.error("Error fetching all properties in service:", error);
-        const message = error.response?.data?.msg || // Check for backend JSON error message
-                        error.message || // Otherwise use Axios/network error message
-                        'Failed to load properties'; // Default fallback
-        throw new Error(message); // Re-throw the error for the component
+        const message = error.response?.data?.msg || error.message || 'Failed to load properties';
+        throw new Error(message);
     }
 };
 
-// Function 2: Get Property By ID
 export const getPropertyById = async (id) => {
-    if (!id) {
-        // Basic validation
-        throw new Error('Property ID is required');
-    }
+     if (!id) throw new Error('Property ID is required');
     try {
-        // Use axios to make the GET request to the specific property endpoint
         const response = await axios.get(`${API_BASE_URL}/${id}`);
-        // Return the single property object data
         return response.data;
     } catch (error) {
-        // Log error and create a user-friendly message
         console.error(`Error fetching property ${id} in service:`, error);
-        const message = error.response?.data?.msg || // Check for backend JSON error message (like 'Property not found')
-                        error.message || // Otherwise use Axios/network error message
-                        `Failed to load property ${id}`; // Default fallback
-        throw new Error(message); // Re-throw the error for the component
+        const message = error.response?.data?.msg || error.message || `Failed to load property ${id}`;
+        throw new Error(message);
     }
 };
 
 export const createProperty = async (propertyData) => {
     try {
-        // Make POST request with property data and Authorization header
+        // Now this call will work because getAuthHeaders is defined above
         const response = await axios.post(API_BASE_URL, propertyData, {
-            headers: getAuthHeaders() // Get token from localStorage
+            headers: getAuthHeaders()
         });
         console.log('Create Property API response:', response.data);
-        // Return the newly created property object from the backend
         return response.data;
     } catch (error) {
         console.error("Create property service error:", error.response?.data || error.message);
-        // Throw a user-friendly error message
         throw new Error(error.response?.data?.msg || 'Failed to create property listing');
     }
 };
 
-// Add createProperty, updateProperty, deleteProperty functions later...
-// export const createProperty = async (propertyData) => { ... };
-// --- NEW FUNCTION: Update Property ---
 export const updateProperty = async (id, propertyData) => {
     if (!id) throw new Error('Property ID is required for update');
     try {
-        // Make PUT request with property data and Auth header
+        // Now this call will work
         const response = await axios.put(`${API_BASE_URL}/${id}`, propertyData, {
             headers: getAuthHeaders()
         });
         console.log('Update Property API response:', response.data);
-        // Return the updated property object
         return response.data;
     } catch (error) {
         console.error(`Update property ${id} service error:`, error.response?.data || error.message);
@@ -77,20 +85,17 @@ export const updateProperty = async (id, propertyData) => {
     }
 };
 
-// --- NEW FUNCTION: Delete Property ---
 export const deleteProperty = async (id) => {
     if (!id) throw new Error('Property ID is required for deletion');
     try {
-        // Make DELETE request with Auth header
+        // Now this call will work
         const response = await axios.delete(`${API_BASE_URL}/${id}`, {
             headers: getAuthHeaders()
         });
         console.log('Delete Property API response:', response.data);
-        // Return the success message/data from the backend
-        return response.data; // Should contain { msg: '...', id: '...' }
+        return response.data;
     } catch (error) {
         console.error(`Delete property ${id} service error:`, error.response?.data || error.message);
         throw new Error(error.response?.data?.msg || `Failed to delete property ${id}`);
     }
 };
-// --- End New Functions ---

@@ -1,44 +1,80 @@
 // client/src/components/PropertyCard.jsx
 import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link
-import './PropertyCard.css';
+import { Link } from 'react-router-dom';
+// --- Mantine Imports ---
+import { Card, Image, Text, Badge, Group, ThemeIcon } from '@mantine/core';
+import { IconBed, IconBath, IconRulerMeasure } from '@tabler/icons-react'; // Icons for details
+import classes from './PropertyCard.module.css'; // Import CSS Modules for custom styles
+
+// Helper function to format price
+const formatPrice = (price, status) => {
+    if (price == null) return 'Contact for price';
+    const formatted = `$${price.toLocaleString()}`;
+    return status === 'For Rent' ? `${formatted} / month` : formatted;
+};
 
 const PropertyCard = ({ property }) => {
     const {
         _id, title, imageUrl, city, state, propertyType, status, price, bedrooms, bathrooms, squareFootage
     } = property;
 
-    const displayPrice = price ? `$${price.toLocaleString()}` : 'Contact for price';
-    const priceSuffix = status === 'For Rent' ? ' / month' : '';
-
-    // Check if _id exists before creating the link URL
-    const detailUrl = _id ? `/properties/${_id}` : '#'; // Fallback if no ID
+    const detailUrl = _id ? `/properties/${_id}` : '#';
 
     return (
-        // Wrap the entire card in a Link (or just part of it if preferred)
-        <Link to={detailUrl} className="property-card-link-wrapper"> {/* Added a wrapper class */}
-            <div className="property-card">
-                <img
+        // Use Mantine Card component as the base
+        <Card shadow="sm" padding="lg" radius="md" withBorder component={Link} to={detailUrl} className={classes.card}>
+            <Card.Section>
+                {/* Mantine Image component with fallback */}
+                <Image
                     src={imageUrl}
-                    alt={`Image of ${title}`}
-                    className="property-card-image"
-                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/eee/ccc?text=Image+Error'; }}
+                    height={180}
+                    alt={`Image of ${title || 'property'}`}
+                    fallbackSrc="https://placehold.co/600x400/eee/ccc?text=No+Image"
                 />
-                <div className="property-card-body">
-                    <h3 className="property-card-title">{title}</h3>
-                    <p className="property-card-location">{city}, {state}</p>
-                    <p className="property-card-type">{propertyType} - {status}</p>
-                    <div className="property-card-details">
-                        {bedrooms != null && <span>{bedrooms} bed{bedrooms !== 1 ? 's' : ''}</span>}
-                        {bathrooms != null && <span>{bathrooms} bath{bathrooms !== 1 ? 's' : ''}</span>}
-                        {squareFootage != null && <span>{squareFootage.toLocaleString()} sqft</span>}
-                    </div>
-                    <p className="property-card-price">
-                        {displayPrice}{priceSuffix}
-                    </p>
-                </div>
-            </div>
-        </Link>
+            </Card.Section>
+
+            {/* Group component for Status/Type Badges */}
+            <Group justify="space-between" mt="md" mb="xs">
+                <Text fw={600} size="lg" truncate="end">{title || 'Untitled Property'}</Text>
+                <Badge color={status === 'For Sale' ? 'blue' : 'green'} variant="light">
+                    {status || 'N/A'}
+                </Badge>
+            </Group>
+
+            {/* Location and Type */}
+            <Text size="sm" c="dimmed" mb="sm">
+                {city || 'N/A'}, {state || 'N/A'} - {propertyType || 'N/A'}
+            </Text>
+
+             {/* Details with Icons */}
+             <Group gap="xs" mb="md" className={classes.detailsGroup}>
+                {bedrooms != null && (
+                    <Group gap={4}>
+                         <ThemeIcon variant="light" size="sm" color="gray"><IconBed size={14} /></ThemeIcon>
+                         <Text size="xs" c="dimmed">{bedrooms} bed{bedrooms !== 1 ? 's' : ''}</Text>
+                    </Group>
+                )}
+                 {bathrooms != null && (
+                     <Group gap={4}>
+                         <ThemeIcon variant="light" size="sm" color="gray"><IconBath size={14} /></ThemeIcon>
+                         <Text size="xs" c="dimmed">{bathrooms} bath{bathrooms !== 1 ? 's' : ''}</Text>
+                     </Group>
+                )}
+                {squareFootage != null && (
+                     <Group gap={4}>
+                         <ThemeIcon variant="light" size="sm" color="gray"><IconRulerMeasure size={14} /></ThemeIcon>
+                         <Text size="xs" c="dimmed">{squareFootage.toLocaleString()} sqft</Text>
+                    </Group>
+                )}
+            </Group>
+
+            {/* Price - Use Mantine Text component */}
+            <Text size="xl" fw={700} className={classes.price}>
+                 {formatPrice(price, status)}
+            </Text>
+
+            {/* Card automatically acts as link due to component={Link} prop */}
+        </Card>
     );
 };
 

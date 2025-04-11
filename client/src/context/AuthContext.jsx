@@ -21,30 +21,44 @@ export const AuthProvider = ({ children }) => {
         const loadUserFromToken = async () => {
             const token = localStorage.getItem('token');
             if (token) {
-                console.log("AuthContext: Initial token found. Verifying...");
+                console.log("AuthContext (Effect): Initial token found. Attempting to fetch user profile..."); // Log 1
                 try {
                     const userData = await getUserProfile(); // Call service
-                    console.log("AuthContext: Token valid, user data fetched:", userData);
-                    setAuthState({ // Update state with user
-                        token: token,
-                        isAuthenticated: true,
-                        isLoading: false,
-                        user: userData
-                    });
+                    // <<< ADD LOG HERE >>>
+                    console.log("AuthContext (Effect): Successfully fetched userData:", userData); // Log 2: Check the structure of userData
+
+                    if (userData && userData.id) { // <<< ADD Check: Ensure userData and id exist >>>
+                         setAuthState({
+                            token: token,
+                            isAuthenticated: true,
+                            isLoading: false,
+                            user: { // Explicitly structure the user object if needed
+                                id: userData.id, // Make sure your backend returns 'id' or '_id'
+                                name: userData.name,
+                                email: userData.email
+                                // Add other relevant fields returned by backend
+                            }
+                         });
+                         console.log("AuthContext (Effect): Auth state updated with user."); // Log 3
+                    } else {
+                        // Handle case where API returned success but no valid user data/id
+                        console.error("AuthContext (Effect): Fetched user data is invalid or missing ID:", userData);
+                        localStorage.removeItem('token');
+                        setAuthState({ token: null, isAuthenticated: false, isLoading: false, user: null });
+                    }
                 } catch (error) {
-                    console.error("AuthContext: Failed to verify token/fetch user.", error.response?.data?.msg || error.message);
-                    localStorage.removeItem('token'); // Remove invalid token
+                    console.error("AuthContext (Effect): API call to getUserProfile failed.", error.response?.data || error.message); // Log 4: Check the error
+                    localStorage.removeItem('token');
                     setAuthState({ token: null, isAuthenticated: false, isLoading: false, user: null });
                 }
             } else {
-                console.log("AuthContext: No initial token found.");
+                console.log("AuthContext (Effect): No initial token found.");
                 setAuthState({ token: null, isAuthenticated: false, isLoading: false, user: null });
             }
         };
 
         loadUserFromToken();
-    }, []); // <<< Semicolon added here (best practice)
-
+    }, []);
     // --- Login Function ---
     // Corrected 'const' keyword
     const loginContext = (token, userData = null) => {

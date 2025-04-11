@@ -1,57 +1,62 @@
 // client/src/services/authService.js
 import axios from 'axios';
 
-const API_URL = '/api/auth'; // Base URL for auth routes (relies on proxy)
+const API_URL = '/api/auth';
+
+// <<< --- ADD THIS HELPER FUNCTION --- >>>
+// Function to get the Authorization header object
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token'); // Get token from storage
+    if (token) {
+        // If token exists, return the header object
+        return { Authorization: `Bearer ${token}` };
+    }
+    // If no token, return an empty object (no auth header)
+    return {};
+};
+// <<< --- END HELPER FUNCTION --- >>>
+
 
 // Register User function
 export const registerUser = async (userData) => {
-    // userData should be an object like { name, email, password }
     try {
-        // Make POST request to the backend register route
         const response = await axios.post(`${API_URL}/register`, userData);
-        // Backend should return { msg: '...', token: '...' } on success
-        console.log('Registration API response:', response.data); // Log for debugging
-        return response.data; // Return the response data (including the token)
+        console.log('Registration API response:', response.data);
+        return response.data;
     } catch (error) {
-        // Log the detailed error
         console.error("Registration service error:", error.response?.data || error.message);
-        // Throw a user-friendly error message
         throw new Error(error.response?.data?.msg || 'Registration failed');
     }
 };
 
 // Login User function
 export const loginUser = async (userData) => {
-    // userData should be an object like { email, password }
-    try {
-        // Make POST request to the backend login route
+     try {
         const response = await axios.post(`${API_URL}/login`, userData);
-        // Backend should return { msg: '...', token: '...' } on success
-        console.log('Login API response:', response.data); // Log for debugging
-        return response.data; // Return the response data (including the token)
+        console.log('Login API response:', response.data);
+        return response.data;
     } catch (error) {
-        // Log the detailed error
         console.error("Login service error:", error.response?.data || error.message);
-        // Throw a user-friendly error message
         throw new Error(error.response?.data?.msg || 'Login failed');
     }
 };
 
-// TODO: Add function later to get user data using token
+// Get User Profile function
 export const getUserProfile = async () => {
+    console.log("AuthService: getUserProfile called."); // <<< Log 1
+    const headers = getAuthHeaders();
+    console.log("AuthService: Headers being sent:", headers); // <<< Log 2
+    if (!headers.Authorization) {
+        console.warn("AuthService: No auth token found for getUserProfile request."); // <<< Log 3
+        // Decide if we should throw error immediately if no token
+        // throw new Error("Not authorized");
+    }
     try {
-        // Make GET request with Authorization header
-        const response = await axios.get(`${API_URL}/user`, {
-            headers: getAuthHeaders()
-        });
-        console.log('Get User Profile API response:', response.data);
-        // Return the user data object
+        const response = await axios.get(`${API_URL}/user`, { headers });
+        console.log('AuthService: Get User Profile API SUCCESS:', response.data); // <<< Log 4
         return response.data;
     } catch (error) {
-        console.error("Get user profile service error:", error.response?.data || error.message);
-        // Don't throw a generic error here, let the context handle auth failure
-        // If the token is invalid, the backend returns 401, axios might throw
-        // Re-throw the original error so context can check status code maybe
+        console.error("AuthService: Get user profile API FAILED:", error.response?.data || error.message); // <<< Log 5
         throw error;
     }
 };
