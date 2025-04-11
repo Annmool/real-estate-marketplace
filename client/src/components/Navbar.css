@@ -1,0 +1,66 @@
+/* client/src/components/Navbar.css */
+
+.navbar {
+    display: flex;
+    justify-content: space-between; /* Pushes brand left, links right */
+    align-items: center;
+    background-color: #282c34; /* Same as header for consistency */
+    padding: 10px 30px; /* Vertical and horizontal padding */
+    color: white;
+    margin-bottom: 30px; /* Space below navbar */
+  }
+  
+  .navbar-brand a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+  
+  .navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Space between links/buttons */
+  }
+  
+  .navbar-links a {
+    color: #a9c1e8; /* Lighter blue for links */
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  .navbar-links a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .navbar-button {
+    background-color: #4a5a70; /* Button background */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .navbar-button:hover {
+    background-color: #5e718c;
+  }
+  
+  .logout-button {
+      background-color: #d9534f; /* Red for logout */
+  }
+  
+  .logout-button:hover {
+      background-color: #c9302c;
+  }
+  
+  .navbar-user {
+      margin-right: 15px;
+      font-style: italic;
+  }

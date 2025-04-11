@@ -1,0 +1,63 @@
+/* client/src/components/PropertyDetail.css */
+
+.property-detail-container {
+    max-width: 900px; /* Limit width */
+    margin: 20px auto; /* Center horizontally with margin */
+    padding: 25px;
+    background-color: #fff; /* White background */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: #333; /* Dark text color */
+    text-align: left; /* Align text left */
+  }
+  
+  .property-detail-title {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #2c3e50;
+  }
+  
+  .property-detail-image {
+    width: 100%;
+    max-height: 450px; /* Limit image height */
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 25px;
+    background-color: #f0f0f0;
+  }
+  
+  .property-detail-info {
+    line-height: 1.7; /* Improve readability */
+  }
+  
+  .property-detail-info h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #34495e;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+  }
+  
+  .property-detail-price {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #3498db;
+    margin-bottom: 15px; /* Add some space below price */
+  }
+  
+  .property-detail-description {
+    white-space: pre-wrap; /* Preserve line breaks in description */
+    margin-top: 5px;
+    padding-bottom: 15px; /* Space below description */
+  }
+  
+  /* Loading/Error styles */
+  .loading, .error, .not-found {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.1em;
+    color: #555;
+  }
+  .error {
+      color: #e74c3c; /* Red for errors */
+  }

@@ -1,0 +1,113 @@
+/* client/src/components/PropertyCard.css */
+
+.property-card {
+    border: 1px solid #e0e0e0; /* Light grey border */
+    border-radius: 8px;       /* Rounded corners */
+    overflow: hidden;         /* Keep image corners rounded */
+    background-color: #ffffff; /* White background */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Hover effect transition */
+    display: flex;            /* Use flexbox for internal layout */
+    flex-direction: column;   /* Stack image and body vertically */
+    color: #333;             /* Default text color for light mode */
+  }
+  
+  /* Add a hover effect */
+  .property-card:hover {
+    transform: translateY(-5px); /* Slightly lift the card */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Enhance shadow */
+  }
+  
+  .property-card-image {
+    width: 100%;              /* Make image fill card width */
+    height: 200px;            /* Fixed height for consistency */
+    object-fit: cover;        /* Cover area without distortion, might crop */
+    display: block;           /* Remove extra space below image */
+    background-color: #f0f0f0; /* Placeholder color if image doesn't load */
+  }
+  
+  .f8c8d;      /* Grey color for secondary info */
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  
+  .property-card-details {
+    font-size: 0.85rem;
+    color: #555;
+    display: flex;        /* Arrange details horizontally */
+    flex-wrap: wrap;      /* Allow details to wrap if needed */
+    gap: 10px;            /* Space between detail items */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 10px;
+    border-top:property-card-body {
+    padding: 15px;            /* Spacing inside the text area */
+    flex-grow: 1;             /* Allow body to fill remaining vertical space */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .property-card-title {
+    font-size: 1.15rem;       /* Slightly larger title */
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #2c3e50;          /* Darker color for title */
+    line-height: 1.3;
+  }
+  
+  .property-card-location,
+  .property-card-type {
+    font-size: 0.9rem;
+    color: #7f8c8d;          /* Lighter grey for secondary info */
+    margin-bottom: 5px;
+  } 1px solid #eee; /* Separator line above details */
+  }
+  
+  .property-card-details span {
+    /* Add icons here later if desired */
+  }
+  
+  .property-card-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #3498db;      /* Blue price color */
+    margin-top: auto;     /* Push price to the bottom */
+    margin-bottom: 0;     /* Remove default bottom margin */
+  }
+  
+  /* Optional: Style for the link (when added) */
+  .property-card-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .property
+  
+  .property-card-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #3498db;          /* Blue color for price */
+    margin-top: auto;         /* Push price & details towards the bottom */
+    margin-bottom: 10px;
+    padding-top: 10px;       /* Space above the price */
+  }
+  
+  .property-card-details {
+    font-size: 0.85rem;
+    color: #555;
+    display: flex;
+    flex-wrap: wrap;         -card-link:hover {
+    text-decoration: underline;
+  }
+  /* client/src/components/PropertyCard.css */
+/* ... (keep existing styles above) ... */
+
+.property-card-link-wrapper {
+    text-decoration: none; /* Remove underline from link */
+    color: inherit;       /* Inherit text color */
+    display: block;       /* Make the link behave like a block */
+  }
