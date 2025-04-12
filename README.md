@@ -160,9 +160,10 @@ This is primarily a portfolio project, but suggestions or feedback are welcome v
 
 ## Author
 
-*   **[Your Name/Handle]** - [Link to your GitHub Profile (Optional)]
+*   **Anmol Yadav** - [https://github.com/Annmool]
 
 ---
 
 ## License
 
+This project is licensed under the MIT License - see the `LICENSE` file (you would need to create this file) for details.
