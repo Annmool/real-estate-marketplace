@@ -1,180 +1,378 @@
-// client/src/components/PropertyDetail.jsx
+"use client"
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom'; // Import Link and useNavigate
-import { getPropertyById, deleteProperty } from '../services/propertyService'; // Import property services
-import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
-import './PropertyDetail.css'; // Import styling
+import { useState, useEffect } from "react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { getPropertyById, deleteProperty } from "../services/propertyService"
+import { useAuth } from "../context/AuthContext"
+import {
+  Container,
+  Image,
+  Text,
+  Group,
+  Badge,
+  Button,
+  Paper,
+  Grid,
+  Divider,
+  Box,
+  Title,
+  Loader,
+  Alert,
+  ThemeIcon,
+  Modal,
+  useMantineTheme,
+} from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
+import {
+  IconBed,
+  IconBath,
+  IconRulerMeasure,
+  IconMapPin,
+  IconCurrencyDollar,
+  IconEdit,
+  IconTrash,
+  IconAlertCircle,
+  IconArrowLeft,
+} from "@tabler/icons-react"
 
 const PropertyDetail = () => {
-    const { id } = useParams(); // Get property ID from URL
-    const navigate = useNavigate();
-    // Call useAuth Hook to get context values
-    const { user, isAuthenticated, isLoading: authLoading } = useAuth(); // Get user, auth status, and loading status from context
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const theme = useMantineTheme()
 
-    // State for this component
-    const [property, setProperty] = useState(null);
-    const [loading, setLoading] = useState(true); // Loading property data
-    const [error, setError] = useState(null);
-    const [deleteLoading, setDeleteLoading] = useState(false);
-    const [deleteError, setDeleteError] = useState('');
+  // State
+  const [property, setProperty] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
+  const [opened, { open, close }] = useDisclosure(false)
 
-    // Effect to fetch property data when component mounts or ID changes
-    useEffect(() => {
-        const fetchPropertyDetails = async () => {
-            if (!id) {
-                setError("No property ID provided in URL.");
-                setLoading(false);
-                return;
-            }
-            console.log(`PropertyDetail: Fetching data for ID: ${id}`);
-            setLoading(true);
-            setError(null);
-            try {
-                const data = await getPropertyById(id);
-                console.log("PropertyDetail: Fetched property data:", data);
-                setProperty(data);
-            } catch (err) {
-                console.error("Error in PropertyDetail component fetching data:", err);
-                setError(err.message || `Failed to load property details for ID: ${id}`);
-                setProperty(null); // Ensure property is null on error
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPropertyDetails();
-    }, [id]); // Dependency array includes 'id'
-
-    // Delete Handler function
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this listing? This cannot be undone.')) {
-            return;
-        }
-        setDeleteLoading(true);
-        setDeleteError('');
-        try {
-            await deleteProperty(id);
-            console.log('Property deleted successfully from detail page.');
-            alert('Property deleted successfully!');
-            navigate('/'); // Redirect to homepage after deletion
-        } catch (err) {
-            console.error("Error deleting property from detail page:", err);
-            setDeleteError(err.message || 'Failed to delete property.');
-        } finally {
-            setDeleteLoading(false);
-        }
-    };
-
-    // --- Render Logic ---
-
-    // Show loading state while either auth or property data is loading
-    if (authLoading || loading) {
-        return <div className="loading">Loading...</div>;
+  // Effect to fetch property data
+  useEffect(() => {
+    const fetchPropertyDetails = async () => {
+      if (!id) {
+        setError("No property ID provided in URL.")
+        setLoading(false)
+        return
+      }
+      console.log(`PropertyDetail: Fetching data for ID: ${id}`)
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getPropertyById(id)
+        console.log("PropertyDetail: Fetched property data:", data)
+        setProperty(data)
+      } catch (err) {
+        console.error("Error in PropertyDetail component fetching data:", err)
+        setError(err.message || `Failed to load property details for ID: ${id}`)
+        setProperty(null)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    // Display error if fetching the property failed
-    if (error) {
-         return <div className="error" style={{ color: 'red', textAlign: 'center', padding: '20px' }}>Error: {error}</div>;
+    fetchPropertyDetails()
+  }, [id])
+
+  // Delete Handler function
+  const handleDelete = async () => {
+    setDeleteLoading(true)
+    setDeleteError("")
+    try {
+      await deleteProperty(id)
+      console.log("Property deleted successfully from detail page.")
+      close()
+      navigate("/")
+    } catch (err) {
+      console.error("Error deleting property from detail page:", err)
+      setDeleteError(err.message || "Failed to delete property.")
+    } finally {
+      setDeleteLoading(false)
     }
+  }
 
-    // Display if property data couldn't be loaded (e.g., 404)
-    if (!property) {
-         return <div className="not-found" style={{ textAlign: 'center', padding: '20px' }}>Property not found.</div>;
-    }
-
-    // --- Perform Ownership Check ONLY after data is loaded ---
-    // Check if authenticated, user object exists, and user ID matches property owner ID
-    const isOwner = isAuthenticated && user && property && user.id === property.owner;
-
-    // <<< --- DEBUGGING LOGS --- >>>
-    console.log("--- PropertyDetail Ownership Check ---");
-    console.log("isAuthenticated (from context):", isAuthenticated);
-    console.log("User ID (from context):", user?.id); // Use optional chaining
-    console.log("Property Owner ID (from data):", property?.owner);
-    console.log("IDs Match?", user?.id === property?.owner);
-    console.log("Is Owner calculated?", isOwner);
-    console.log("------------------------------------");
-    // <<< --- END DEBUGGING LOGS --- >>>
-
-    // Destructure property details safely now that property is not null
-    const {
-        title = 'N/A', description = 'No description available.', imageUrl = 'https://placehold.co/800x500/eee/ccc?text=No+Image',
-        price, status, address = 'N/A', city = 'N/A', state = 'N/A', zipCode = 'N/A',
-        propertyType = 'N/A', bedrooms, bathrooms, squareFootage
-    } = property;
-
-    const displayPrice = price ? `$${price.toLocaleString()}` : 'Contact for price';
-    const priceSuffix = status === 'For Rent' ? ' / month' : '';
-
+  // Render Logic
+  if (authLoading || loading) {
     return (
-        <div className="property-detail-container">
-            {/* Display Property Title */}
-            <h2 className="property-detail-title">{title}</h2>
+      <Container size="md" py="xl" style={{ display: "flex", justifyContent: "center" }}>
+        <Loader size="lg" color="teal" />
+      </Container>
+    )
+  }
 
-            {/* --- Edit/Delete Buttons (Show only if isOwner is true) --- */}
+  if (error) {
+    return (
+      <Container size="md" py="xl">
+        <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">
+          {error}
+        </Alert>
+      </Container>
+    )
+  }
+
+  if (!property) {
+    return (
+      <Container size="md" py="xl">
+        <Alert icon={<IconAlertCircle size="1rem" />} title="Not Found" color="yellow">
+          Property not found.
+        </Alert>
+      </Container>
+    )
+  }
+
+  // Perform Ownership Check
+  const isOwner = isAuthenticated && user && property && user.id === property.owner
+
+  // Destructure property details
+  const {
+    title = "N/A",
+    description = "No description available.",
+    imageUrl = "https://placehold.co/800x500/e2e8f0/94a3b8?text=No+Image",
+    price,
+    status,
+    address = "N/A",
+    city = "N/A",
+    state = "N/A",
+    zipCode = "N/A",
+    propertyType = "N/A",
+    bedrooms,
+    bathrooms,
+    squareFootage,
+  } = property
+
+  const displayPrice = price ? `${price.toLocaleString()}` : "Contact for price"
+  const priceSuffix = status === "For Rent" ? " / month" : ""
+  const badgeColor = status === "For Sale" ? "orange" : "teal"
+
+  return (
+    <Box className="animated-bg">
+      <div className="decorative-circle top-right"></div>
+      <Container size="lg" py="xl">
+        <Button component={Link} to="/" variant="subtle" leftSection={<IconArrowLeft size={16} />} mb="md" color="teal">
+          Back to listings
+        </Button>
+
+        <Paper
+          shadow="md"
+          radius="lg"
+          p={0}
+          style={{
+            overflow: "hidden",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8))",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.3)",
+          }}
+        >
+          {/* Property Image */}
+          <Box style={{ position: "relative" }}>
+            <Image
+              src={imageUrl || "/placeholder.svg"}
+              height={400}
+              alt={`Image of ${title}`}
+              fallbackSrc="https://placehold.co/800x500/e2e8f0/94a3b8?text=No+Image"
+            />
+            <Badge
+              size="lg"
+              color={badgeColor}
+              variant="filled"
+              style={{
+                position: "absolute",
+                top: 20,
+                right: 20,
+                zIndex: 2,
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.15)",
+              }}
+            >
+              {status}
+            </Badge>
+          </Box>
+
+          <Box p="xl">
+            {/* Owner Actions */}
             {isOwner && (
-                <div className="owner-actions" style={{ marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #eee', textAlign: 'right' }}>
-                    {/* Link to the Edit page */}
-                    <Link to={`/edit-listing/${id}`} className="button edit-button" style={buttonStyle('#f0ad4e')}>
-                        Edit Listing
-                    </Link>
-                    {/* Delete Button */}
-                    <button
-                        onClick={handleDelete}
-                        disabled={deleteLoading}
-                        className="button delete-button"
-                        style={buttonStyle('#d9534f', deleteLoading)}
-                    >
-                        {deleteLoading ? 'Deleting...' : 'Delete Listing'}
-                    </button>
-                    {/* Display delete error message if any */}
-                    {deleteError && <p style={{ color: 'red', textAlign: 'right', marginTop: '5px', fontSize: '0.9em' }}>{deleteError}</p>}
-                </div>
-             )}
-             {/* --- END Edit/Delete Buttons --- */}
+              <Group position="right" mb="md">
+                <Button
+                  component={Link}
+                  to={`/edit-listing/${id}`}
+                  variant="outline"
+                  color="teal"
+                  leftSection={<IconEdit size={16} />}
+                  className="hover-lift"
+                >
+                  Edit Listing
+                </Button>
+                <Button
+                  variant="outline"
+                  color="red"
+                  leftSection={<IconTrash size={16} />}
+                  onClick={open}
+                  className="hover-lift"
+                >
+                  Delete Listing
+                </Button>
+              </Group>
+            )}
 
-            {/* Display Property Image */}
-            <img
-                src={imageUrl} // Use the actual URL or fallback
-                alt={`Image of ${title}`}
-                className="property-detail-image"
-                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x500/eee/ccc?text=Image+Error'; }}
+            {/* Title and Price */}
+            <Title order={1} mb="xs" className="gradient-text">
+              {title}
+            </Title>
+            <Group mb="lg">
+              <Badge size="lg" color={badgeColor}>
+                {status}
+              </Badge>
+              <Badge size="lg" color="purple">
+                {propertyType}
+              </Badge>
+            </Group>
+
+            <Text
+              size="xl"
+              fw={700}
+              mb="md"
+              style={{
+                background: "linear-gradient(90deg, var(--mantine-color-teal-6), var(--mantine-color-purple-6))",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+                display: "inline-block",
+                fontSize: "2rem",
+              }}
+            >
+              <Group gap={5}>
+                <IconCurrencyDollar size={28} style={{ color: theme.colors.teal[6] }} />
+                {displayPrice}
+                {priceSuffix}
+              </Group>
+            </Text>
+
+            <Group mb="lg">
+              <ThemeIcon size="lg" variant="light" color="teal" radius="md">
+                <IconMapPin size={20} />
+              </ThemeIcon>
+              <Text>{address ? `${address}, ${city}, ${state} ${zipCode || ""}` : `${city}, ${state}`}</Text>
+            </Group>
+
+            <Divider
+              my="lg"
+              style={{
+                background: "linear-gradient(90deg, var(--mantine-color-teal-3), var(--mantine-color-purple-3))",
+                height: "2px",
+                border: "none",
+              }}
             />
 
-            {/* Display Property Information */}
-            <div className="property-detail-info">
-                <h3>Key Information</h3>
-                <p><strong>Status:</strong> {status || 'N/A'}</p>
-                <p><strong>Type:</strong> {propertyType || 'N/A'}</p>
-                <p className="property-detail-price"><strong>Price:</strong> {displayPrice}{priceSuffix}</p>
-                <p><strong>Address:</strong> {address ? `${address}, ${city}, ${state} ${zipCode || ''}` : `${city || 'N/A'}, ${state || 'N/A'}`}</p>
+            {/* Property Details */}
+            <Grid mb="xl">
+              {bedrooms != null && (
+                <Grid.Col span={{ base: 12, sm: 4 }}>
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      borderColor: theme.colors.teal[1],
+                      background: "linear-gradient(135deg, rgba(224, 242, 241, 0.5), rgba(178, 223, 219, 0.3))",
+                    }}
+                    className="hover-lift"
+                  >
+                    <Group>
+                      <ThemeIcon size="lg" radius="md" color="teal" variant="light">
+                        <IconBed size={20} />
+                      </ThemeIcon>
+                      <div>
+                        <Text size="xs" c="dimmed">
+                          Bedrooms
+                        </Text>
+                        <Text fw={700}>{bedrooms}</Text>
+                      </div>
+                    </Group>
+                  </Paper>
+                </Grid.Col>
+              )}
 
-                <h3>Details</h3>
-                {bedrooms != null ? <p><strong>Bedrooms:</strong> {bedrooms}</p> : null}
-                {bathrooms != null ? <p><strong>Bathrooms:</strong> {bathrooms}</p> : null}
-                {squareFootage != null ? <p><strong>Sq. Footage:</strong> {squareFootage.toLocaleString()} sqft</p> : null}
+              {bathrooms != null && (
+                <Grid.Col span={{ base: 12, sm: 4 }}>
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      borderColor: theme.colors.purple[1],
+                      background: "linear-gradient(135deg, rgba(243, 229, 245, 0.5), rgba(225, 190, 231, 0.3))",
+                    }}
+                    className="hover-lift"
+                  >
+                    <Group>
+                      <ThemeIcon size="lg" radius="md" color="purple" variant="light">
+                        <IconBath size={20} />
+                      </ThemeIcon>
+                      <div>
+                        <Text size="xs" c="dimmed">
+                          Bathrooms
+                        </Text>
+                        <Text fw={700}>{bathrooms}</Text>
+                      </div>
+                    </Group>
+                  </Paper>
+                </Grid.Col>
+              )}
 
-                <h3>Description</h3>
-                <p className="property-detail-description">{description || 'No description provided.'}</p>
+              {squareFootage != null && (
+                <Grid.Col span={{ base: 12, sm: 4 }}>
+                  <Paper
+                    p="md"
+                    withBorder
+                    style={{
+                      borderColor: theme.colors.orange[1],
+                      background: "linear-gradient(135deg, rgba(255, 243, 224, 0.5), rgba(255, 224, 178, 0.3))",
+                    }}
+                    className="hover-lift"
+                  >
+                    <Group>
+                      <ThemeIcon size="lg" radius="md" color="orange" variant="light">
+                        <IconRulerMeasure size={20} />
+                      </ThemeIcon>
+                      <div>
+                        <Text size="xs" c="dimmed">
+                          Square Footage
+                        </Text>
+                        <Text fw={700}>{squareFootage.toLocaleString()} sqft</Text>
+                      </div>
+                    </Group>
+                  </Paper>
+                </Grid.Col>
+              )}
+            </Grid>
 
-            </div>
-        </div>
-    );
-};
+            {/* Description */}
+            <Title order={3} mb="md" className="gradient-text">
+              Description
+            </Title>
+            <Text style={{ lineHeight: 1.7 }}>{description}</Text>
+          </Box>
+        </Paper>
+      </Container>
 
-// Helper function for button styles (remains the same)
-const buttonStyle = (bgColor, disabled = false) => ({
-    padding: '8px 15px',
-    marginLeft: '10px',
-    fontSize: '0.9rem',
-    color: 'white',
-    backgroundColor: disabled ? '#ccc' : bgColor,
-    border: 'none',
-    borderRadius: '4px',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.6 : 1,
-    textDecoration: 'none'
-});
+      {/* Delete Confirmation Modal */}
+      <Modal opened={opened} onClose={close} title="Confirm Deletion" centered>
+        <Text mb="lg">Are you sure you want to delete this listing? This action cannot be undone.</Text>
+        {deleteError && (
+          <Alert color="red" mb="md">
+            {deleteError}
+          </Alert>
+        )}
+        <Group position="right">
+          <Button variant="outline" onClick={close}>
+            Cancel
+          </Button>
+          <Button color="red" onClick={handleDelete} loading={deleteLoading}>
+            Delete
+          </Button>
+        </Group>
+      </Modal>
+    </Box>
+  )
+}
 
-export default PropertyDetail;
+export default PropertyDetail

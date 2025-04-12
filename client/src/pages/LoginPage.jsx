@@ -1,69 +1,122 @@
-// client/src/pages/LoginPage.jsx
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../services/authService'; // <<< Import service function
-import { useAuth } from '../context/AuthContext';   // <<< Import context hook
+"use client"
+
+import { useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import { loginUser } from "../services/authService"
+import { useAuth } from "../context/AuthContext"
+import { TextInput, PasswordInput, Button, Paper, Title, Text, Container, Divider, Alert, Box } from "@mantine/core"
+import { IconAlertCircle, IconLogin, IconBuildingEstate } from "@tabler/icons-react"
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const { loginContext } = useAuth(); // <<< Get login function from context
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const { loginContext } = useAuth()
+  const navigate = useNavigate()
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
-        try {
-            // <<< Call actual login service >>>
-            const responseData = await loginUser({ email, password });
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      const responseData = await loginUser({ email, password })
 
-            // <<< Use context to store token >>>
-            if (responseData.token) {
-                loginContext(responseData.token); // Pass token to context
-                console.log("Login successful, navigating home...");
-                navigate('/'); // Redirect to homepage after successful login
-            } else {
-                setError('Login completed but no token received.');
-            }
+      if (responseData.token) {
+        loginContext(responseData.token)
+        console.log("Login successful, navigating home...")
+        navigate("/")
+      } else {
+        setError("Login completed but no token received.")
+      }
+    } catch (err) {
+      console.error("Login page error:", err)
+      setError(err.message || "Login failed. Please check credentials.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        } catch (err) {
-            console.error("Login page error:", err);
-            // Display the error message thrown by the service
-            setError(err.message || 'Login failed. Please check credentials.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <Box className="animated-bg">
+      <div className="decorative-circle top-right"></div>
+      <div className="decorative-circle bottom-left"></div>
 
-    // --- Keep Styles and Return JSX the same ---
-    const formStyle = { display: 'flex', flexDirection: 'column', maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9' };
-    const inputStyle = { marginBottom: '15px', padding: '10px', fontSize: '1rem', border: '1px solid #ccc', borderRadius: '4px' };
-    const buttonStyle = { padding: '10px 15px', fontSize: '1rem', backgroundColor: '#0275d8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' };
-    const errorStyle = { color: 'red', marginBottom: '10px'};
-    const linkStyle = { marginTop: '15px', textAlign: 'center' };
+      <Container size="xs" py="xl">
+        <Paper
+          radius="lg"
+          p="xl"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8))",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Box ta="center" mb="lg">
+            <IconBuildingEstate size={50} style={{ color: "#009688" }} />
+            <Title order={2} ta="center" mt="md" mb="md" className="gradient-text">
+              Welcome Back!
+            </Title>
+          </Box>
 
-    return (
-        <div style={{ color: '#333' }}>
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit} style={formStyle}>
-                 {/* ... (form inputs remain the same) ... */}
-                 {error && <p style={errorStyle}>{error}</p>}
-                 <label htmlFor="email">Email:</label>
-                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle}/>
-                 <label htmlFor="password">Password:</label>
-                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle}/>
-                <button type="submit" disabled={loading} style={buttonStyle}>
-                     {loading ? 'Logging In...' : 'Login'}
-                </button>
-                <p style={linkStyle}>
-                    Don't have an account? <Link to="/register">Register here</Link>
-                </p>
-            </form>
-        </div>
-    );
-};
+          <Text c="dimmed" size="sm" ta="center" mb="xl">
+            Enter your credentials to access your account
+          </Text>
 
-export default LoginPage;
+          {error && (
+            <Alert icon={<IconAlertCircle size="1rem" />} color="red" mb="md">
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <TextInput
+              label="Email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              mb="md"
+            />
+
+            <PasswordInput
+              label="Password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              mb="xl"
+            />
+
+            <Button
+              fullWidth
+              type="submit"
+              loading={loading}
+              leftSection={<IconLogin size={18} />}
+              className="gradient-button"
+              size="md"
+            >
+              Sign in
+            </Button>
+          </form>
+
+          <Divider
+            label="Don't have an account?"
+            labelPosition="center"
+            my="lg"
+            style={{
+              color: "#009688",
+            }}
+          />
+
+          <Button component={Link} to="/register" variant="outline" fullWidth color="teal">
+            Create account
+          </Button>
+        </Paper>
+      </Container>
+    </Box>
+  )
+}
+
+export default LoginPage
